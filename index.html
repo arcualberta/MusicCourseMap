@@ -1,0 +1,82 @@
+<html>
+	<head>
+		<title>Test</title>
+
+		<link rel="stylesheet" href="./lib/style.css"/>
+		<script type="text/javascript" src="./lib/jquery-3.3.1.min.js"></script>
+		<script type="text/javascript" src="./lib/d3.js"></script>
+		<script type="text/javascript" src="./lib/d3-selection-multi.js"></script>
+		<script type="text/javascript" src="./lib/objects.js"></script>
+
+		<script type="text/javascript">
+			var menu = null;
+
+			var CLIENT_ID = '';
+			var API_KEY = 'AIzaSyDWjO2WcW9R4f5ZQfe2akasaKYp0cr2_zg';
+			var SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly";
+			var SPREADSHEET = '1S4ohxxotVYMcjiwDyZiq-w7C_5TC800bTlLy3FWzVs8';
+			var DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"];
+
+
+			function handleClientLoad() {
+				menu = new Menu(".menu-area")
+				menu.updateAll();
+				gapi.load('client', initClient);
+			}
+
+			function initClient() {
+				gapi.client.init({
+					apiKey: API_KEY,
+					discoveryDocs: DISCOVERY_DOCS,
+					scopes: SCOPES
+				}).then(function(){
+					getSheet();
+				});
+			}
+
+			function getSheet(){
+				gapi.client.sheets.spreadsheets.get({
+					spreadsheetId: SPREADSHEET,
+					includeGridData: true,
+					ranges: ['Config!A1:B4', 'Categories!A:C', 'Topics!A:D', 'Courses!A:H']
+				}).then(function(response){
+					menu.loadFromServer(response.result.sheets[0].data[0], response.result.sheets[1].data[0], response.result.sheets[2].data[0], response.result.sheets[3].data[0]);
+					menu.loading = false;
+					menu.updateAll();
+				});
+			}
+
+			// Button Functions
+			function panelSlide(ev){
+				var parent = ev.target.parentElement;
+
+				if(parent.classList.contains("active")){
+					parent.classList.remove("active")
+				}else{
+					parent.classList.add("active")
+				}
+
+				return false;
+			}
+		</script>
+
+		 <script async defer src="https://apis.google.com/js/api.js"
+		      onload="this.onload=function(){};handleClientLoad()"
+		      onreadystatechange="if (this.readyState === 'complete') this.onload()">
+		    </script>
+	</head>
+	<body>
+		<div class="menu-area" style="height: 100vh; width: 100%">
+			<div class="map-menu">
+				<!-- TODO: Make as expandable -->
+				<svg class="map"></svg>
+			</div>
+			<div class="side-menu active">
+				<div class="menu">
+					<div class="title-bar menu-title"></div>
+				</div>
+				<div class="btn btn-expansion" onclick="return panelSlide(event)"></div>
+			</div>
+		</div>
+	</body>
+</html>
